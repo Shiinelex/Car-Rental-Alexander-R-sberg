@@ -5,5 +5,7 @@ public enum VehicleType
     Sedan,
     Combi, 
     Motorcycle,
-    Van
+    Van,
+    Sport
+    
 }
