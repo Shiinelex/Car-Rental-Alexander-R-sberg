@@ -36,12 +36,60 @@ public class CollectionData : IData
     public IEnumerable<IBooking> GetBooking() => bookings;
     public List<T> Get<T>(Expression<Func<T, bool>>? expression)
     {
-        return default(List<T>);
+        if (typeof(T) == typeof(IPerson))
+        {
+            var result = expression != null ? 
+                persons.Cast<T>().Where(expression.Compile()).ToList() 
+                : persons.Cast<T>().ToList();
+            return result;
+        }
+        else if (typeof(T) == typeof(IVehicle))
+        {
+            var result = expression != null ? 
+                vehicles.Cast<T>().Where(expression.Compile()).ToList() 
+                : vehicles.Cast<T>().ToList();
+            return result;
+        }
+        else if (typeof(T) == typeof(IBooking))
+        {
+            var result = expression != null ? 
+                bookings.Cast<T>().Where(expression.Compile()).ToList() 
+                : bookings.Cast<T>().ToList();
+            return result;
+        }
+        else
+        {
+            throw new ArgumentException("Listan finns ej");
+        }
     }
 
     public T? Single<T>(Expression<Func<T, bool>>? expression)
     {
-        return default(T?);
+        if (typeof(T) == typeof(IPerson))
+        {
+            var result = expression != null ?
+                persons.Cast<T>().Where(expression.Compile()).Single()
+                : persons.Cast<T>().Single();
+            return result;
+        }
+        else if (typeof(T) == typeof(IVehicle))
+        {
+            var result = expression != null ?
+                vehicles.Cast<T>().Where(expression.Compile()).Single()
+                : vehicles.Cast<T>().Single();
+            return result;
+        }
+        else if (typeof(T) == typeof(IBooking))
+        {
+            var result = expression != null ?
+                bookings.Cast<T>().Where(expression.Compile()).Single() :
+                bookings.Cast<T>().Single();
+            return result;
+        }
+        else
+        {
+            throw new ArgumentException("Objektet du söker finns ej");
+        }
     }
 
     public void Add<T>(T item)
@@ -54,16 +102,15 @@ public class CollectionData : IData
 
     public void RentVehicle(int vehicleId, int customerId)
     {
-        var vehicle = GetVehicles().Single(v => v.Id == vehicleId);
-        var customer = GetPersons().Single(p => p.Id == customerId);
+        var vehicle = Single<IVehicle>(v => v.Id == vehicleId);
+        var customer = Single<IPerson>(p => p.Id == customerId);
         var booking = new Booking(NextBookingId, vehicle, customer);
         Add(booking);
     }
     public void RemoveCustomer(int? customerId)
     {
-        if (customerId == null) { return; }
-        var customer = GetPersons().Single(p => p.Id == customerId);
-        persons.Remove(customer);
+        var customer = customerId != null ? Single<IPerson>(p => p.Id == customerId)
+            : throw new ArgumentException("Customer id är Null");
     }
     public void ReturnVehicle(int vehicleID, double? distance)
     {

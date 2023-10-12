@@ -31,24 +31,18 @@ public class BookingProcessor
     #region Get Methods
     public IEnumerable<IPerson> GetPersons()
     {
-        IEnumerable<IPerson> p = _db.GetPersons();
-        return p;
+        IEnumerable<IPerson> personList = _db.Get<IPerson>(p => p != null);
+        return personList;
     }
-    public IEnumerable<IVehicle> GetVehicles(VehicleStatus status = default)
+    public IEnumerable<IVehicle> GetVehicles()
     {
-        IEnumerable<IVehicle> v = _db.GetVehicles(status);
-        return v;
+        IEnumerable<IVehicle> vehicleList = _db.Get<IVehicle>(v => v != null);
+        return vehicleList;
     }
     public IEnumerable<IBooking> GetBookings()
     {
-        IEnumerable<IBooking> b = _db.GetBooking();
-
-        foreach (var booking in b)
-        {
-            if (booking.Status == BookingStatus.Open) { continue; }
-            //booking.CalculateCost();
-        }
-        return b;
+        IEnumerable<IBooking> bookingList = _db.Get<IBooking>(b => b != null);
+        return bookingList;
     }
     #endregion
 
