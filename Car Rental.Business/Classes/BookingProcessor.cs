@@ -2,7 +2,6 @@
 using Car_Rental.Common.Enums;
 using Car_Rental.Common.Interfaces;
 using Car_Rental.Data.Interfaces;
-using System.Linq;
 
 namespace Car_Rental.Business.Classes;
 
@@ -10,27 +9,23 @@ public class BookingProcessor
 {
     private readonly IData _db;
 
+
+
     public BookingProcessor(IData db) => _db = db;
 
-    #region Variables
-    //Booking
+    public Vehicle tempVehicle = new();
+    public Person tempCustomer = new();
+
+    public bool isLoading = false;
+
+    #region Variables Booking
     public double? personId;
     public double? KmReturned;
     public double? Cost;
 
-    //Vehicle
-    public string regNo = string.Empty;
-    public string brand = string.Empty;
-    public double? odometer;
-    public double? costKM;
-    public double? costDay;
-    public VehicleType type;
+    int selectNumber = 0;
 
     public double? distance;
-    //Person
-    public int? sSN;
-    public string? firstName = string.Empty;
-    public string? lastName = string.Empty;
     #endregion
 
     #region Get Methods
@@ -59,37 +54,38 @@ public class BookingProcessor
 
     public void AddPerson()
     {
-        if (!CheckCustomerInputs(sSN, lastName, firstName)) { return; }
-        _db.Add(new Customer(_db.NextPersonId, sSN, firstName, lastName));
-        ResetCustomerInputs();
-        
+        if (!CheckCustomerInputs(tempCustomer.SSN, tempCustomer.LastName, tempCustomer.FirstName)) { return; }
+        _db.Add(new Customer(_db.NextPersonId, tempCustomer.SSN, tempCustomer.FirstName, tempCustomer.LastName));
+        tempCustomer = new();
     }
     public void AddVehicle()
     {
-        if (!CheckVehicleInputs(regNo, brand, odometer, costKM, costDay)) { return; }
-        if (type == VehicleType.Motorcycle)
+
+        if (!CheckVehicleInputs(tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.CostDay)) { return; }
+        if (tempVehicle.Type == VehicleType.Motorcycle)
         {
-            _db.Add(new Motorcycle(_db.NextVehicleId, regNo, brand, odometer, costKM, costDay));
-            ResetVehicleInputs();
+            _db.Add(new Motorcycle(_db.NextVehicleId, tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.CostDay));
+            tempVehicle = new();
         }
         else
         {
-            _db.Add(new Car(_db.NextVehicleId, regNo, brand, odometer, costKM, type, costDay));
-            ResetVehicleInputs();
+            _db.Add(new Car(_db.NextVehicleId, tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.Type, tempVehicle.CostDay));
+            tempVehicle = new();
         }
     }
-    public void RentVehicle(IVehicle vehicle)
+    public async Task RentVehicle(IVehicle vehicle)
     {
-        IPerson person = GetPersons().FirstOrDefault(x => x.Id == personId);
+        await WaitAWhile();
+        IPerson person = GetPersons().FirstOrDefault(x => x.Id == vehicle.tempPerson);
         if (person == null) { return; }
         _db.Add(new Booking(_db.NextBookingId, vehicle, person));
         vehicle.Status = VehicleStatus.Booked;
     }
 
-    public void ReturnVehicle(int vehicleID, double? distance)
+    public void ReturnVehicle(int vehicleID, double? dist)
     {
-        if (distance == null) { return; }
-        _db.ReturnVehicle(vehicleID, distance);
+        if (dist == null) { return; }
+        _db.ReturnVehicle(vehicleID, dist);
         distance = null;
     }
 
@@ -98,20 +94,11 @@ public class BookingProcessor
         _db.RemoveCustomer(customerId);
     }
 
-    void ResetVehicleInputs()
+    public async Task WaitAWhile()
     {
-        regNo = string.Empty;
-        brand = string.Empty;
-        odometer = null;
-        costKM = null;
-        costDay = null;
-        type = default;
-    }
-    void ResetCustomerInputs()
-    {
-        sSN = null;
-        lastName = string.Empty;
-        firstName = string.Empty;
+        isLoading = true;
+        await Task.Delay(1000);
+        isLoading = false;
     }
 
     bool CheckVehicleInputs(string regNo, string brand, double? odometer, double? costKM, double? costDay)

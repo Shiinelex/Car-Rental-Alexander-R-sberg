@@ -15,5 +15,6 @@ public class Motorcycle : Vehicle
         CostKM = costKM;
         CostDay = costDay;
         Status = vehicleStatus;
+        tempPerson = null;
     }
 }

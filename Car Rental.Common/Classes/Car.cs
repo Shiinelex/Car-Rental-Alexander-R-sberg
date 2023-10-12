@@ -15,5 +15,6 @@ public class Car : Vehicle
         Type = type;
         CostDay = costDay;
         Status = vehicleStatus;
+        tempPerson = null;
     }
 }

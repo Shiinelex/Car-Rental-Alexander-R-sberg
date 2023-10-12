@@ -1,8 +1,9 @@
-﻿using Car_Rental.Common.Enums;
-using Car_Rental.Common.Interfaces;
-using Car_Rental.Common.Classes;
-using Car_Rental.Data.Interfaces;
+﻿using Car_Rental.Common.Classes;
+using Car_Rental.Common.Enums;
 using Car_Rental.Common.Extensions;
+using Car_Rental.Common.Interfaces;
+using Car_Rental.Data.Interfaces;
+using System.Linq.Expressions;
 
 namespace Car_Rental.Data.Classes;
 
@@ -33,7 +34,15 @@ public class CollectionData : IData
     public IEnumerable<IPerson> GetPersons() => persons;
     public IEnumerable<IVehicle> GetVehicles(VehicleStatus status = default) => vehicles;
     public IEnumerable<IBooking> GetBooking() => bookings;
-    //public List<T> Get<T>(Expression<Func<T, bool>>? expression)
+    public List<T> Get<T>(Expression<Func<T, bool>>? expression)
+    {
+        return default(List<T>);
+    }
+
+    public T? Single<T>(Expression<Func<T, bool>>? expression)
+    {
+        return default(T?);
+    }
 
     public void Add<T>(T item)
     {

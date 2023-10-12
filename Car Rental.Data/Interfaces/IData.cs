@@ -1,5 +1,6 @@
 ﻿using Car_Rental.Common.Enums;
 using Car_Rental.Common.Interfaces;
+using System.Linq.Expressions;
 
 namespace Car_Rental.Data.Interfaces;
 
@@ -18,12 +19,7 @@ public interface IData
     public void RentVehicle(int vehicleId, int customerId);
     public void RemoveCustomer(int? customerId);
 
-    //public List<T> Get<T>(Expression<Func<T, bool>>? expression);
+    public List<T> Get<T>(Expression<Func<T, bool>>? expression);
 
-    //T? Single<T>(Expression<Func<T, bool>>? expression);
-
-    // Default Interface Methods
- /*public string[] VehicleStatusNames => Retunera enum konstanterna
- public string[] VehicleTypeNames => Retunera enum konstanterna
- public VehicleTypes GetVehicleTyp*/
+    public T? Single<T>(Expression<Func<T, bool>>? expression);
 }

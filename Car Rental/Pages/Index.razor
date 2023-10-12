@@ -23,14 +23,15 @@
             <th>Action</th>
             <th>Status</th>
         </tr>
+    </thead>
+    <tbody>
         <tr>
-            <!--Vehicle Input Row-->
-            <th><input @bind="@bp.regNo" class="inputClass rounded-2" placeholder="Reg Number" /></th>
-            <th><input @bind="@bp.brand" class="inputClass rounded-2" placeholder="Brand" /></th>
-            <th><input @bind="@bp.odometer" class="inputClass rounded-2" type="number" placeholder="KM" /></th>
-            <th><input @bind="@bp.costKM" class="inputClass rounded-2" type="number" placeholder="Cost KM" /></th>
+            <th><input disabled="@bp.isLoading" @bind="@bp.tempVehicle.RegNo" class="inputClass rounded-2" placeholder="Reg Number" /></th>
+            <th><input disabled="@bp.isLoading" @bind="@bp.tempVehicle.Brand" class="inputClass rounded-2" placeholder="Brand" /></th>
+            <th><input disabled="@bp.isLoading" @bind="@bp.tempVehicle.Odometer" class="inputClass rounded-2" type="number" placeholder="KM" /></th>
+            <th><input disabled="@bp.isLoading" @bind="@bp.tempVehicle.CostKM" class="inputClass rounded-2" type="number" placeholder="Cost KM" /></th>
             <th>
-                <select @bind="@bp.type" class="rounded-2" style="width:100%; height: 30px; min-width:100px;">
+                <select disabled="@bp.isLoading" @bind="@bp.tempVehicle.Type" class="rounded-2" style="width:100%; height: 30px; min-width:100px;">
                     <option disabled selected value> - select type - </option>
                     @foreach (var type in Enum.GetNames(typeof(VehicleType)))
                     {
@@ -38,12 +39,17 @@
                     }
                 </select>
             </th>
-            <th><input @bind="@bp.costDay" class="inputClass rounded-2" placeholder="$ Day" /></th>
-            <th><button type="button" @onclick="@bp.AddVehicle" class="btn btn-outline-primary btn-sm inputClass">Add</button></th>
-            <th><span class="badge rounded-pill text-bg-warning">Loading..</span></th>
+            <th><input disabled="@bp.isLoading" @bind="@bp.tempVehicle.CostDay" class="inputClass rounded-2" placeholder="$ Day" /></th>
+            <th><button disabled="@bp.isLoading" type="button" @onclick="@bp.AddVehicle" class="btn btn-outline-primary btn-sm inputClass">Add</button></th>
+            @if (bp.isLoading)
+            {
+                <th style="min-width: 100px;"><span class="badge rounded-pill text-bg-warning">Loading..</span></th>
+            }
+            else
+            {
+                <th style="min-width: 100px;"></th>
+            }
         </tr>
-    </thead>
-    <tbody>
         <!--Creates the Vehicle table-rows-->
         @foreach(var vehicle in bp.GetVehicles())
         {
@@ -57,20 +63,20 @@
                 <td>
                     <span style="display:flex">
                     @if(vehicle.Status == VehicleStatus.Available)
-                    {
-                        <select @bind="@bp.personId" class="rounded-2" style="width:100%; min-width:100px;">
-                        <option disabled selected value> - select person - </option>
-                        @foreach(var person in bp.GetPersons())
-                        {
-                                    <option value="@person.Id">@($"{person.FirstName} {person.LastName} ({person.SSN})")</option>
-                        }
+                    {  
+                        <select @bind="@vehicle.tempPerson" disabled="@bp.isLoading" class="rounded-2" style="width:100%; min-width:100px;">
+                            <option disabled selected value> - select person - </option>
+                            @foreach(var person in bp.GetPersons())
+                            {
+                                        <option value="@person.Id">@($"{person.FirstName} {person.LastName} ({person.SSN})")</option>
+                            }
                         </select>
-                        <button @onclick="(() => bp.RentVehicle(vehicle))" type="button" class="btn btn-outline-primary btn-sm" style="min-width: 70px; margin-left: 10px">Book</button>
+                        <button @onclick="(() => bp.RentVehicle(vehicle))" disabled="@bp.isLoading" type="button" class="btn btn-outline-primary btn-sm" style="min-width: 70px; margin-left: 10px">Book</button>
                     }
                     else
                     {
-                        <input @bind="bp.distance" class="inputClass rounded-2 border-1" placeholder="Distance" />
-                        <button @onclick="(() => bp.ReturnVehicle(vehicle.Id, bp.distance))" type="button" class="btn btn-outline-primary btn-sm" style="min-width: 70px; margin-left: 10px">Return</button>
+                        <input @bind="bp.distance" disabled="@bp.isLoading" class="inputClass rounded-2 border-1" placeholder="Distance" />
+                        <button @onclick="(() => bp.ReturnVehicle(vehicle.Id, bp.distance))" disabled="@bp.isLoading" type="button" class="btn btn-outline-primary btn-sm" style="min-width: 70px; margin-left: 10px">Return</button>
                     }
                     </span>
                 </td>
@@ -148,9 +154,9 @@
             <th>Action</th>
         </tr>
             <tr>
-            <th><input @bind="bp.sSN" class="inputClass rounded-2" placeholder="SSN" /></th>
-            <th><input @bind="bp.lastName" class="inputClass rounded-2" placeholder="Last Name" /></th>
-            <th><input @bind="bp.firstName" class="inputClass rounded-2" placeholder="First Name" /></th>
+            <th><input @bind="bp.tempCustomer.SSN" class="inputClass rounded-2" placeholder="SSN" /></th>
+            <th><input @bind="bp.tempCustomer.LastName" class="inputClass rounded-2" placeholder="Last Name" /></th>
+            <th><input @bind="bp.tempCustomer.FirstName" class="inputClass rounded-2" placeholder="First Name" /></th>
             <th><button @onclick="bp.AddPerson" class="btn btn-outline-primary btn-sm" style="width: 100%">Add</button></th>
         </tr>
     </thead>

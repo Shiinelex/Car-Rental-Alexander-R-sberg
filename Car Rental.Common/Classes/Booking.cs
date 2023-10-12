@@ -28,6 +28,6 @@ public class Booking : IBooking
         Cost = null;
         CostDay = vehicle.CostDay;
         CostKM = vehicle.CostKM;
-        BookingStatus status = BookingStatus.Open;
+        Status = BookingStatus.Open;
     }
 }
