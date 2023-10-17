@@ -9,9 +9,16 @@
 
 <h1>Car Rental Assignment - Alexander Råsberg</h1>
 
-
-
 <h4>Vehicles</h4>
+
+@if (bp.error.Length > 0)
+{
+
+    <div class="alert alert-danger" role="alert">
+        <b>ERROR</b> @bp.error
+    </div>
+
+}
 
 <table class="table table-hover border visible border-3 border-black">
     <thead>

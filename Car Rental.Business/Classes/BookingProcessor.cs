@@ -9,7 +9,7 @@ public class BookingProcessor
 {
     private readonly IData _db;
 
-
+    public string error = string.Empty;
 
     public BookingProcessor(IData db) => _db = db;
 
@@ -22,8 +22,6 @@ public class BookingProcessor
     public double? personId;
     public double? KmReturned;
     public double? Cost;
-
-    int selectNumber = 0;
 
     public double? distance;
     #endregion
@@ -48,39 +46,55 @@ public class BookingProcessor
 
     public void AddPerson()
     {
-        if (!CheckCustomerInputs(tempCustomer.SSN, tempCustomer.LastName, tempCustomer.FirstName)) { return; }
-        _db.Add(new Customer(_db.NextPersonId, tempCustomer.SSN, tempCustomer.FirstName, tempCustomer.LastName));
+        if (!CheckCustomerInputs(tempCustomer.SSN, tempCustomer.LastName, tempCustomer.FirstName)) 
+        {
+            return; 
+        }
+        IPerson person = new Customer(_db.NextPersonId, tempCustomer.SSN, tempCustomer.FirstName, tempCustomer.LastName);
+        _db.Add(person);
         tempCustomer = new();
     }
     public void AddVehicle()
     {
-
-        if (!CheckVehicleInputs(tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.CostDay)) { return; }
+        if (!CheckVehicleInputs(tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.CostDay)) 
+        {
+            return; 
+        }
+        IVehicle vehicle;
         if (tempVehicle.Type == VehicleType.Motorcycle)
         {
-            _db.Add(new Motorcycle(_db.NextVehicleId, tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.CostDay));
-            tempVehicle = new();
+            vehicle = new Motorcycle(_db.NextVehicleId, tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.CostDay);
         }
         else
         {
-            _db.Add(new Car(_db.NextVehicleId, tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.Type, tempVehicle.CostDay));
-            tempVehicle = new();
+            vehicle = new Car(_db.NextVehicleId, tempVehicle.RegNo, tempVehicle.Brand, tempVehicle.Odometer, tempVehicle.CostKM, tempVehicle.Type, tempVehicle.CostDay);
         }
+        _db.Add(vehicle);
+        tempVehicle = new();
     }
     public async Task RentVehicle(IVehicle vehicle)
     {
         await WaitAWhile();
         IPerson person = GetPersons().FirstOrDefault(x => x.Id == vehicle.tempPerson);
         if (person == null) { return; }
-        _db.Add(new Booking(_db.NextBookingId, vehicle, person));
+        IBooking booking = new Booking(_db.NextBookingId, vehicle, person);
+        _db.Add(booking);
         vehicle.Status = VehicleStatus.Booked;
     }
 
     public void ReturnVehicle(int vehicleID, double? dist)
     {
-        if (dist == null) { return; }
-        _db.ReturnVehicle(vehicleID, dist);
-        distance = null;
+        try
+        {
+            if (dist == null) { return; }
+            _db.ReturnVehicle(vehicleID, dist);
+            distance = null;
+        }
+        catch
+        {
+            error = "Return Failed";
+        }
+
     }
 
     public void RemoveCustomer(int? customerId)
@@ -97,25 +111,71 @@ public class BookingProcessor
 
     bool CheckVehicleInputs(string regNo, string brand, double? odometer, double? costKM, double? costDay)
     {
-        if(odometer == null || costKM == null || costDay == null) { return false; }
-        if(string.IsNullOrEmpty(regNo) || string.IsNullOrEmpty(brand)) { return false; }
-        if(costKM <= 0 || costDay <= 0) { return false; }
-        if ($"{odometer}{costKM}{costDay}".Contains('e')) { return false; }
+        if ($"{odometer}{costKM}{costDay}".Contains('e'))
+        {
+            error = "Odometer, CostKM and $Day shuld only contain numbers";
+            return false;
+        }
+        if (odometer == null || costKM == null || costDay == null) 
+        {
+            error = "Every input is not filled in";
+            return false; 
+        }
+        if(string.IsNullOrEmpty(regNo) || string.IsNullOrEmpty(brand)) 
+        {
+            error = "Every input is not filled in";
+            return false; 
+        }
+        if(costKM <= 0 || costDay <= 0) 
+        {
+            error = "CostKM and $Day should not be zero";
+            return false; 
+        }
         foreach(IVehicle vehicle in GetVehicles())
         {
-            if (vehicle.RegNo == regNo) { return false; }
+            if (vehicle.RegNo == regNo) 
+            {
+                error = "Reg Number already exist";
+                return false; 
+            }
         }
+        if(odometer < 0 || costKM < 0 || costDay < 0)
+        {
+            error = "Odometer, CostKM and $Day cannot be less than 0";
+            return false;
+        }
+        error = string.Empty;
         return true;
     }
 
     bool CheckCustomerInputs(int? sSN, string? lastName, string? firstName)
     {
-        if(string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || sSN == null) { return false; }
-        if (sSN.ToString().Contains('e')) { return false; }
+        if(string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) || sSN == null) 
+        { 
+            error = "Every input is not filled in"; 
+            return false; 
+        }
+        if (sSN.ToString().Contains('e') || sSN.ToString().Length != 4) 
+        { 
+            error = "SSN should only contain 4 numbers"; 
+            return false; 
+        }
         foreach (IPerson person in GetPersons())
         {
-            if (person.SSN == sSN) { return false; }
+            if (person.SSN == sSN) { error = "SSN elready exist"; return false; }
         }
+        if (lastName.Any(char.IsDigit))
+        {
+            error = "The last name contains numbers"; 
+            return false;
+        }
+        if (firstName.Any(char.IsDigit))
+        {
+            error = "The first name contains numbers";
+            return false;
+        }
+
+        error = string.Empty;
         return true;
     }
 }
